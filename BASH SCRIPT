@@ -1,0 +1,22 @@
+dir=/home/oracle/dba
+if [ $# -ne 1 ]
+then
+echo "Enter retailer ID as parameter"
+else
+retailer=$1
+. $dir/.CBP_LOAD $retailer
+echo $password
+count=`sqlplus <<END
+$retailer/$password@cbpqc
+SELECT COUNT(1) FROM tablename@dblink WHERE MARKETKEY IN (SELECT MKTKEY FROM STG_DIM_MARKET); 
+exit;
+END`
+echo $count | grep -i "ERROR"
+if [ $? -eq 0 ]
+then
+echo "Error in getting the count"
+exit
+else
+echo "There are $count rows for this retailer" 
+fi
+fi
